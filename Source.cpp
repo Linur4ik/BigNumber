@@ -91,17 +91,17 @@ public:
 	BigNum& operator += (const BigNum&);
 	BigNum operator - (const BigNum&);
 	BigNum& operator -= (const BigNum&);
-	BigNum operator * (const BigNum&); 
+	BigNum operator * (const BigNum&);
 	BigNum operator+ (const Base);
 	BigNum& operator+= (const Base);
 	BigNum& operator*= (const Base);
 	BigNum& operator*= (const BigNum&);
-	BigNum operator * (const Base); 
-	BigNum operator /(const Base); 
-	BigNum& operator /=(const Base); 
-	BigNum operator /(const BigNum&); 
-	BigNum& operator /=(const BigNum&); 
-	Base operator %(const Base); 
+	BigNum operator * (const Base);
+	BigNum operator /(const Base);
+	BigNum& operator /=(const Base);
+	BigNum operator /(const BigNum&);
+	BigNum& operator /=(const BigNum&);
+	Base operator %(const Base);
 	BigNum operator % (const BigNum&);
 	BigNum gcd(const BigNum&);
 	void PrintCoef();
@@ -140,6 +140,7 @@ public:
 	BigNum Gelfond(BigNum, BigNum);
 	BigNum pPolard(BigNum, BigNum);
 	vector<BigNum> Fx(vector<BigNum>, BigNum, BigNum);
+	BigNum ph(BigNum);
 };
 
 BigNum& BigNum :: operator = (BigNum const& c)
@@ -166,13 +167,13 @@ BigNum& BigNum :: operator = (const Base num)
 	return *this;
 }
 
-void BigNum :: Norm()
+void BigNum::Norm()
 {
 	for (Len = MaxLen; Ptr[Len - 1] == 0 && Len > 0; Len--);
 	if (Len == 0) Len = 1;
 }
 
-BigNum BigNum:: stupid_pow(BigNum& n)
+BigNum BigNum::stupid_pow(BigNum& n)
 {
 	BigNum i; i = (Base)0;
 	BigNum res; res = (Base)1;
@@ -438,9 +439,9 @@ BigNum BigNum::operator - (const BigNum& a)
 	return A;
 }
 
-BigNum& BigNum::operator -= (const BigNum& LN) 
+BigNum& BigNum::operator -= (const BigNum& LN)
 {
-	if (*this < LN) 
+	if (*this < LN)
 	{
 		cout << "first value should be bigger than second to subtract" << endl;
 		return *this;
@@ -448,13 +449,13 @@ BigNum& BigNum::operator -= (const BigNum& LN)
 	int min;
 	bool k = 0;
 	tmp TMP;
-	for (int i = 0; i < LN.Len; i++) 
+	for (int i = 0; i < LN.Len; i++)
 	{
 		TMP = Ptr[i] + BaseMax - LN.Ptr[i] - k;
 		k = !((TMP) >> BaseSize);
 		Ptr[i] = (Base)TMP;
 	}
-	for (int i = LN.Len; k && i <= Len; i++) 
+	for (int i = LN.Len; k && i <= Len; i++)
 	{
 		TMP = Ptr[i] + BaseMax - k;
 		k = !((TMP) >> BaseSize);
@@ -485,7 +486,7 @@ BigNum BigNum::operator+ (const Base a)
 	return A;
 }
 
-BigNum& BigNum::operator+= (const Base a) 
+BigNum& BigNum::operator+= (const Base a)
 {
 	*this = *this + a;
 	return *this;
@@ -878,7 +879,7 @@ BigNum BigNum::pow(BigNum& n)
 		z += Base(1);
 	}
 	Base n_bits = n.bits();
-	for (int i = 1; i < n_bits; i++) 
+	for (int i = 1; i < n_bits; i++)
 	{
 		q = q.Fast_Sq();
 		if (n.bit(i)) z *= q;
@@ -966,7 +967,7 @@ BigNum BigNum::BarretMod(BigNum& m, BigNum& z)
 	return r;
 }
 
-void TestMod(int N, int M) 
+void TestMod(int N, int M)
 {
 	BigNum x(M - M / 3, 1);
 	BigNum z = GetBarretZ(x);
@@ -1279,7 +1280,7 @@ void TestGen(int k)
 BigNum BigNum::sqrt()
 {
 	BigNum x(*this), x0;
-	do 
+	do
 	{
 		x0 = x;
 		x = (*this / x + x) / 2;
@@ -1309,7 +1310,7 @@ vector<BigNum> BigNum::fact()
 	seven += Base(7);
 	auto ds = sqrt();
 	auto    k = 1,
-	preK = 0;
+		preK = 0;
 	while (dk < ds && n != one)
 	{
 		if (k != preK) switch (k) // Последовательность пробных делителей 
@@ -1350,7 +1351,7 @@ vector<BigNum> BigNum::fact()
 		{
 			res.push_back(n);
 			break;
-		}+
+		}
 	}
 	return res;
 }
@@ -1362,7 +1363,7 @@ pair<BigNum, BigNum> BigNum::methodFermat() // Поиск делителей
 	auto x = sqrt();
 	if (x.Fast_Sq() == *this) return make_pair(x, x);
 	BigNum  y, z;
-	do 
+	do
 	{
 		x += Base(1);
 		if (x == (*this + Base(1)) / Base(2)) { cout << "n is a prime number" << endl; return make_pair(Base(1), *this); }
@@ -1574,66 +1575,118 @@ BigNum BigNum::algorithmAlway(BigNum d)
 
 }
 
-vector<BigNum> BigNum :: Fx(vector<BigNum>str, BigNum g, BigNum a)
+vector<BigNum> BigNum::Fx(vector<BigNum>str, BigNum g, BigNum a)
 {
-	BigNum Three,S,x,Two,One,Zero;
+	BigNum Three, S, x, Two, One, Zero;
+	vector<BigNum>tr(3);
 	One += Base(1);
 	Two = One + One;
 	Three = Two + One;
 	x = str[0];
 	S = x % Three;
-	if (S == Zero)
-	{
-		str[0] = (a * x) % *this;
-		//str[1] = str[1];
-		str[2] = (str[2] + 1) % *this;
-		return str;
-	}
+	
 	if (S == One)
 	{
-		str[0] = str[0].Fast_Sq() % *this;
-		str[1] = (Two * str[1]) % *this;
-		str[2] = (Two * str[2]) % *this;
-		return str;
+		tr[0] = (a * x) % *this;
+		tr[1] = str[1];
+		tr[2] = (str[2] + 1) % (*this - One);
+		return tr;
 	}
 	if (S == Two)
 	{
-		str[0] = (g * x) % *this;
-		str[1] = (str[1] + 1) % *this;
-		//str[2] = str[2];
-		return str;
+		tr[0] = str[0].Fast_Sq() % *this;
+		tr[1] = (Two * str[1]) % (*this - One);
+		tr[2] = (Two * str[2]) % (*this - One);
+		return tr;
 	}
+	else 
+	{
+		tr[0] = (g * x) % *this;
+		tr[1] = (str[1] + 1) % (*this - One);
+		tr[2] = str[2];
+		return tr;
+	}
+}
+
+int p_mod_1_int(int x, int n)
+{
+	int u1 = n;
+	int u2 = 0;
+	int v1 = x;
+	int v2 = 1;
+	while (v1 != 0)
+	{
+		int q = u1 / v1;
+		int t1 = u1 % v1;
+		int t2 = u2 - q * v2;
+		u1 = v1;
+		v1 = t1;
+		u2 = v2;
+		v2 = t2;
+	}
+	return (u2 % n);
 }
 
 
 
-BigNum  BigNum :: pPolard(BigNum g, BigNum a)
+BigNum p_mod_1(BigNum x, BigNum n)
 {
-	BigNum One, d, r,rx;
+	BigNum u1 = n;
+	BigNum u2;
+	BigNum One; One += Base(1);
+	BigNum v1 = x;
+	BigNum v2 = One;
+	BigNum Zero;
+	while (v1 != Zero)
+	{
+		BigNum q = u1 / v1;
+		BigNum t1 = u1 % v1;
+		BigNum str = (q * v2) % n;
+		if (u2 < str)
+		{
+			u2 += n;
+		}
+		BigNum t2 = u2 - str;
+		u1 = v1;
+		v1 = t1;
+		u2 = v2;
+		v2 = t2;
+	}
+	return (u2 % n);
+}
+
+BigNum  BigNum::pPolard(BigNum g, BigNum a)
+{
+	BigNum One, d, r, rx, x, Zero;
+	vector <BigNum> z;
 	One += Base(1);
 	vector <BigNum> x1(3); // x1 y1 b1;
 	vector <BigNum> x2(3); // x2 y2 b2;
-	x1[0] = One; //x1[1] += Base(0); x1[2] += Base(0);
-	x2[0] = One; //x2[1] += Base(0); x2[2] += Base(0);
-	do
+	x1[0] = One; x1[1] += Base(0); x1[2] += Base(0);
+	x2[0] = One; x2[1] += Base(0); x2[2] += Base(0);
+	while(1)
 	{
 		x1 = Fx(x1, g, a);
-		x2 = Fx(Fx(x2, g, a), g, a);
-	} while (x1[0] != x2[0]);
-
-	while (x1[2] < x2[2]) // b1 < b2
-	{
-		x1[2] += *this;
+		x2 = Fx(x2, g, a);
+		x2 = Fx(x2, g, a);
+		if (x1[0] == x2[0]) break;
 	}
-	r = (x1[2] - x2[2]) % *this; // 4
-	d = r.gcd(*this); // gcd (r,n)
-	if (x2[1] < x1[1])
+	if (x1[2] < x2[2]) x1[2] += (*this - One);
+	r = (x1[2] - x2[2]) % (*this - One); // 4
+	if (r == Zero) return Zero;
+	d = r.gcd((*this) - One); // gcd (r,n-1)
+	if (x2[1] < x1[1]) x2[1] += (*this -One);
+	rx = ((x2[1] - x1[1]) / d);
+	r = r / d;
+	x = p_mod_1(r, (*this - One) / d);
+	x = (rx * x) % ((*this - One) / d);
+	if (g.PowMod(x, *this) == a) return x;
+	for (BigNum i = One; i < d; i += One)
 	{
-		x2[1] += *this;
+		x = x + (*this - 1) / d * i;
+		if (g.PowMod(x, *this) == a) return x;
 	}
-	rx = (x2[1] - x1[1]) % *this;
-	auto str=fact()
-	return a;
+	return Zero;
 }
 
 
@@ -1643,17 +1696,15 @@ int main()
 	time(nullptr);
 
 
-	 //6  pPolard lab
-	
+	//6  pPolard lab
+
 	BigNum a, n, g;
-	n.Scanf10("1571");
-	g.Scanf10("52");
-	a.Scanf10("647");
+	n.Scanf10("131");
+	g.Scanf10("2");
+	a.Scanf10("7");
 	n.pPolard(g, a).Printf10();
-	
+	cout << endl;
 
-
-	
 	// First Lab
 	/*
 	BigNum a;
@@ -1663,7 +1714,7 @@ int main()
 		t[i].Printf10();
 		cout << endl;
 	}
-	
+
 	*/
 
 	// Second lab
@@ -1695,12 +1746,12 @@ int main()
 
 
 	// 5 Gelfond lab
-	/*
-	BigNum a, n, g;
-	n.Scanf10("1571");
-	g.Scanf10("52");
-	a.Scanf10("647");
-	n.Gelfond(g, a).Printf10();
-	*/
+	//
+	//BigNum a, n, g;
+	//n.Scanf10("1571");
+	//g.Scanf10("52");
+	//a.Scanf10("647");
+	//n.Gelfond(g, a).Printf10();
+	
 
 }
