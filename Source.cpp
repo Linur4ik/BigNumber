@@ -1689,22 +1689,37 @@ BigNum  BigNum::pPolard(BigNum g, BigNum a)
 	return Zero;
 }
 
+void pPolardTest()
+{
+	BigNum a, n, g;
+	string d;
+	while (1)
+	{
+		cout << "n=";
+		cin >> d;
+		n.Scanf10(d.c_str());
+		cout << "g=";
+		cin >> d;
+		g.Scanf10(d.c_str());
+		cout << "a=";
+		cin >> d;
+		a.Scanf10(d.c_str());
+		cout << "Polard: ";
+		n.pPolard(g, a).Printf10();
+		cout << endl;
+	}
+	return;
+}
+
 
 int main()
 {
 	srand(time(0));
 	time(nullptr);
-
+	
 
 	//6  pPolard lab
-
-	BigNum a, n, g;
-	n.Scanf10("131");
-	g.Scanf10("2");
-	a.Scanf10("7");
-	n.pPolard(g, a).Printf10();
-	cout << endl;
-
+	pPolardTest();
 	// First Lab
 	/*
 	BigNum a;
